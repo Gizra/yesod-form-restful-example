@@ -77,11 +77,14 @@ getItemR :: Handler Html
 getItemR = do
     -- Generate the form to be displayed
     (widget, enctype) <- generateFormPost itemForm
-    defaultLayout
+    defaultLayout $ do
+        addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
+
         [whamlet|
-            <form method=post action=@{ItemR} enctype=#{enctype}>
-                ^{widget}
-                <button>Submit
+            <div. ui.container>
+                <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
+                    ^{widget}
+                    <button>Submit
         |]
 
 
