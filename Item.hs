@@ -1,3 +1,13 @@
+#!/usr/bin/env stack
+
+{- stack
+     --resolver lts-5.10
+     --install-ghc
+     runghc
+     --package yesod
+     --package persistent-sqlite
+ -}
+
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE FlexibleContexts           #-}
