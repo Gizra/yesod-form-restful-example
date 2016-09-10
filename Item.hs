@@ -116,7 +116,9 @@ postApiItemsR = do
     mItem <- insertItem item
     case mItem of
         Left errors -> invalidArgs errors
-        Right val -> sendResponseStatus status201 (object [])
+        Right val -> do
+            let (Entity _ entity) = val
+            sendResponseStatus status201 (toJSON entity)
 
 
 insertItem :: Item -> Handler (Either [Text] (Entity Item))
