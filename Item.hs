@@ -1,4 +1,5 @@
 {-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -11,10 +12,14 @@
 
 import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runStderrLoggingT)
+import Data.Aeson (FromJSON, ToJSON, decode, encode)
 import Data.Text           (Text)
 import Data.Time.Clock
 import Database.Persist.Sqlite
+import GHC.Generics (Generic)
 import Yesod
+import Network.HTTP.Types
+
 
 
 data App = App ConnectionPool
@@ -22,12 +27,14 @@ data App = App ConnectionPool
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Item
     price Int
-    deriving Show
+    deriving Show Generic
 |]
 
 
 mkYesod "App" [parseRoutes|
 / ItemR GET POST
+/api/v1.0/items ApiItemsR POST
+/api/v1.0/items/#ItemId ApiItemR GET
 |]
 
 instance Yesod App
@@ -41,6 +48,9 @@ instance YesodPersist App where
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
+
+instance FromJSON Item
+instance ToJSON Item
 
 validateMinimumPrice :: Int -> Either Text Int
 validateMinimumPrice price =
@@ -89,6 +99,19 @@ postItemR = do
                     ^{widget}
                     <button>Submit
             |]
+
+
+getApiItemR :: ItemId -> Handler Value
+getApiItemR itemId = do
+    item <- runDB $ get404 itemId
+    return $ object []
+
+postApiItemsR :: Handler Value
+postApiItemsR = do
+    item   <- requireJsonBody :: Handler Item
+    itemId <- runDB $ insert item
+
+    sendResponseStatus status201 (object [])
 
 openConnectionCount :: Int
 openConnectionCount = 10
