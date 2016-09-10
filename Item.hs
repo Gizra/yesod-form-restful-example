@@ -108,9 +108,10 @@ getApiItemR itemId = do
 postApiItemsR :: Handler Value
 postApiItemsR = do
     item   <- requireJsonBody :: Handler Item
-    case (insertItem item) of
-        Left errors -> invalidArgs
-        Right insertItem -> sendResponseStatus status201 $ (toJSON [])
+    mItem <- insertItem item
+    case mItem of
+        Left errors -> invalidArgs errors
+        Right val -> sendResponseStatus status201 (object [])
 
 
 insertItem :: Item -> Handler (Either [Text] (Entity Item))
