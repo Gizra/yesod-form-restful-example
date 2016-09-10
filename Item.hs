@@ -79,7 +79,6 @@ getItemR = do
     (widget, enctype) <- generateFormPost itemForm
     defaultLayout $ do
         addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
-
         [whamlet|
             <div. ui.container>
                 <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
@@ -92,7 +91,10 @@ postItemR :: Handler Html
 postItemR = do
     ((result, widget), enctype) <- runFormPost itemForm
     case result of
-        FormSuccess item ->
+        FormSuccess item -> do
+            -- Insert the entity.
+            _ <- insertItem item
+            setMessage "Item saved"
             defaultLayout [whamlet|<p>#{show item}|]
         _ -> defaultLayout
             [whamlet|
