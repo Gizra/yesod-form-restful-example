@@ -13,13 +13,13 @@
 import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runStderrLoggingT)
 import Data.Aeson (FromJSON, ToJSON, decode, encode)
+import Data.Either (lefts)
 import Data.Text           (Text)
 import Data.Time.Clock
 import Database.Persist.Sqlite
 import GHC.Generics (Generic)
-import Yesod
 import Network.HTTP.Types
-
+import Yesod
 
 
 data App = App ConnectionPool
@@ -59,19 +59,18 @@ validateMinimumPrice price =
         else Right price
 
 -- Validate price inside the Handler.
-validateMinimumPriceInHandler :: Int -> Handler (Either Text Int)
-validateMinimumPriceInHandler price = do
-    liftIO $ print  "handler!!!!"
-    currentTime <- liftIO getCurrentTime
-    return $ if (price <= 0)
-        then Left "Price should be above 0, sent from inside Handler"
+validateNoExistingPrice :: Int -> Handler (Either Text Int)
+validateNoExistingPrice price = do
+    existing <- runDB $ count [ItemPrice ==. price]
+    return $ if (existing > 0)
+        then Left "Price already exists"
         else Right price
 
 
 itemForm :: Html -> MForm Handler (FormResult Item, Widget)
 itemForm = renderDivs $ Item
     <$> areq priceField "Price" Nothing
-    where priceField = (check validateMinimumPrice . checkM validateMinimumPriceInHandler) intField
+    where priceField = (check validateMinimumPrice . checkM validateNoExistingPrice) intField
 
 -- The GET handler displays the form
 getItemR :: Handler Html
@@ -109,9 +108,29 @@ getApiItemR itemId = do
 postApiItemsR :: Handler Value
 postApiItemsR = do
     item   <- requireJsonBody :: Handler Item
-    itemId <- runDB $ insert item
+    case (insertItem item) of
+        Left errors -> invalidArgs
+        Right insertItem -> sendResponseStatus status201 $ (toJSON [])
 
-    sendResponseStatus status201 $ toJSON item
+
+insertItem :: Item -> Handler (Either [Text] (Entity Item))
+insertItem item = do
+    let validations =
+            [ validateMinimumPrice $ itemPrice item
+            ]
+
+    -- Get the monadic validations.
+    validationsM <- sequenceA
+            [ validateNoExistingPrice $ itemPrice item
+            ]
+
+    let lefts' = lefts $ validations ++ validationsM
+    if (not $ null lefts')
+        then return $ Left lefts'
+        else do
+            insertedItem <- runDB $ insertEntity item
+            return $ Right insertedItem
+
 
 openConnectionCount :: Int
 openConnectionCount = 10
