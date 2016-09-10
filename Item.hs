@@ -104,14 +104,14 @@ postItemR = do
 getApiItemR :: ItemId -> Handler Value
 getApiItemR itemId = do
     item <- runDB $ get404 itemId
-    return $ object []
+    return $ toJSON item
 
 postApiItemsR :: Handler Value
 postApiItemsR = do
     item   <- requireJsonBody :: Handler Item
     itemId <- runDB $ insert item
 
-    sendResponseStatus status201 (object [])
+    sendResponseStatus status201 $ toJSON item
 
 openConnectionCount :: Int
 openConnectionCount = 10
