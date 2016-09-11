@@ -108,7 +108,11 @@ postItemR = do
 
             defaultLayout $  do
                 addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
-                [whamlet|<p>#{show item}|]
+                [whamlet|
+                    <div .ui.container>
+                        <div .ui.raised.segment">
+                            <p>#{show item}
+                |]
         _ -> do
             setMessage "Saving failed"
 
