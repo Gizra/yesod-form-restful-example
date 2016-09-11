@@ -118,7 +118,8 @@ postItemR = do
 
             defaultLayout $ do
                 addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
-                [whamlet|
+                toWidget [lucius| .errors { color: red; } |]
+                toWidget [whamlet|
                     <div .ui.container>
                         <div .ui.raised.segment">
                             <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
