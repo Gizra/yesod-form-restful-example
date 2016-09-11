@@ -89,10 +89,11 @@ getItemR = do
     defaultLayout $ do
         addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
         [whamlet|
-            <div. ui.container>
-                <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
-                    ^{widget}
-                    <button>Submit
+            <div .ui.container>
+                <div .ui.raised.segment">
+                    <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
+                        ^{widget}
+                        <button>Submit
         |]
 
 
@@ -104,14 +105,22 @@ postItemR = do
             -- Insert the entity.
             _ <- insertItem item
             setMessage "Item saved"
-            defaultLayout [whamlet|<p>#{show item}|]
-        _ -> defaultLayout
-            [whamlet|
-                <p>Invalid input, let's try again.
-                <form method=post action=@{ItemR} enctype=#{enctype}>
-                    ^{widget}
-                    <button>Submit
-            |]
+
+            defaultLayout $  do
+                addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
+                [whamlet|<p>#{show item}|]
+        _ -> do
+            setMessage "Saving failed"
+
+            defaultLayout $ do
+                addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
+                [whamlet|
+                    <div .ui.container>
+                        <div .ui.raised.segment">
+                            <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
+                                ^{widget}
+                                <button>Submit
+                |]
 
 
 getApiItemR :: ItemId -> Handler Value
