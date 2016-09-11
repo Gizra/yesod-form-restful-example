@@ -93,7 +93,7 @@ getItemR = do
                 <div .ui.raised.segment">
                     <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
                         ^{widget}
-                        <button>Submit
+                        <button .ui.button.primary>Submit
         |]
 
 
@@ -124,7 +124,7 @@ postItemR = do
                         <div .ui.raised.segment">
                             <form .ui.form method=post action=@{ItemR} enctype=#{enctype}>
                                 ^{widget}
-                                <button>Submit
+                                <button .ui.button.primary>Submit
                 |]
 
 
