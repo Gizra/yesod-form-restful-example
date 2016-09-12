@@ -103,7 +103,7 @@ postItemR = do
     case result of
         FormSuccess item -> do
             -- Insert the entity.
-            _ <- insertItem item
+            _ <- insertItem item False
             setMessage "Item saved"
 
             defaultLayout $  do
@@ -136,7 +136,7 @@ getApiItemR itemId = do
 postApiItemsR :: Handler Value
 postApiItemsR = do
     item   <- requireJsonBody :: Handler Item
-    mItem <- insertItem item
+    mItem <- insertItem item True
     case mItem of
         Left errors -> invalidArgs errors
         Right val -> do
@@ -144,20 +144,25 @@ postApiItemsR = do
             sendResponseStatus status201 (toJSON entity)
 
 
-insertItem :: Item -> Handler (Either [Text] (Entity Item))
-insertItem item = do
-    let validations =
-            [ validateMinimumPrice $ itemPrice item
-            ]
+insertItem :: Item -> Bool -> Handler (Either [Text] (Entity Item))
+insertItem item validate = do
+    if validate
+        then do
+            let validations =
+                    [ validateMinimumPrice $ itemPrice item
+                    ]
 
-    -- Get the monadic validations.
-    validationsM <- sequenceA
-            [ validateNoExistingPrice $ itemPrice item
-            ]
+            -- Get the monadic validations.
+            validationsM <- sequenceA
+                    [ validateNoExistingPrice $ itemPrice item
+                    ]
 
-    let lefts' = lefts $ validations ++ validationsM
-    if (not $ null lefts')
-        then return $ Left lefts'
+            let lefts' = lefts $ validations ++ validationsM
+            if (not $ null lefts')
+                then return $ Left lefts'
+                else do
+                    insertedItem <- runDB $ insertEntity item
+                    return $ Right insertedItem
         else do
             insertedItem <- runDB $ insertEntity item
             return $ Right insertedItem
@@ -170,5 +175,5 @@ main :: IO ()
 main = runStderrLoggingT $ withSqlitePool "test.db3" openConnectionCount $ \pool -> liftIO $ do
     runResourceT $ flip runSqlPool pool $ do
         runMigration migrateAll
-        insert $ Item 50
+        insert $ Item (-10)
     warp 3000 $ App pool
