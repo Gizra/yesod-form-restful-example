@@ -103,8 +103,15 @@ postItemR = do
     case result of
         FormSuccess item -> do
             -- Insert the entity.
-            _ <- insertItem item False
-            setMessage "Item saved"
+            (Right item') <- insertItem item False
+            let (Entity itemId _) = item'
+            renderer <- getUrlRenderParams
+            let html = [hamlet|
+                <div .ui.container>
+                    <div .message>
+                        Item saved! See <a href="@{ApiItemR itemId}">RESTful</a>
+                       |]
+            setMessage $ toHtml $ html renderer
 
             defaultLayout $  do
                 addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
