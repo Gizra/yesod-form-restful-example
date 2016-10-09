@@ -100,12 +100,12 @@ getItemR = do
 postItemR :: Handler Html
 postItemR = do
     ((result, widget), enctype) <- runFormPost itemForm
+    renderer <- getUrlRenderParams
     case result of
         FormSuccess item -> do
             -- Insert the entity.
             (Right item') <- insertItem item False
             let (Entity itemId _) = item'
-            renderer <- getUrlRenderParams
             let html = [hamlet|
                 <div .ui.container>
                     <div .message>
@@ -121,7 +121,12 @@ postItemR = do
                             <p>#{show item}
                 |]
         _ -> do
-            setMessage "Saving failed"
+            let html = [hamlet|
+                <div .ui.container>
+                    <div .message.errors>
+                        Saving failed!
+                       |]
+            setMessage $ toHtml $ html renderer
 
             defaultLayout $ do
                 addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
