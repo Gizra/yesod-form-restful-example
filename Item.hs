@@ -109,7 +109,7 @@ postItemR = do
             let html = [hamlet|
                 <div .ui.container>
                     <div .message>
-                        Item saved! See the <a href="@{ApiItemR itemId}">RESTful</a> item
+                        Item saved! See the <a href="@{ApiItemR itemId}">RESTful</a> item, or <a href="@{ItemR}">back</a> to the form.
                        |]
             setMessage $ toHtml $ html renderer
 
