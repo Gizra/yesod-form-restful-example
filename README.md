@@ -1,7 +1,15 @@
 ## Installation
 
-* [Install Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade)
-* `stack build yesod-bin cabal-install --install-ghc`
+[Install Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade)
+
+```bash
+stack build yesod-bin cabal-install --install-ghc
+stack install yesod
+stack install persistent-sqlite
+```
+
+## Execution
+
 * Execute the file via command line `./Item.hs` or `stack runghc ./Item.hs`. Note that the first run will
 take a while, as Stack will build the project.
 * Navigate to http://localhost:3000/
