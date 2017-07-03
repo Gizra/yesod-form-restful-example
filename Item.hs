@@ -83,11 +83,10 @@ itemForm = renderDivs $ Item <$> areq priceField "Price" Nothing
   where
     priceField = (check validateMinimumPrice . checkM validateNoExistingPrice) intField
 
--- The GET handler displays the form
+{-| The GET handler displays the form.
+-}
 getItemR :: Handler Html
-getItemR
-    -- Generate the form to be displayed
- = do
+getItemR = do
     (widget, enctype) <- generateFormPost itemForm
     defaultLayout $ do
         addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css"
@@ -103,10 +102,9 @@ postItemR :: Handler Html
 postItemR = do
     ((result, widget), enctype) <- runFormPost itemForm
     renderer <- getUrlRenderParams
+    -- Insert the entity.
     case result of
-        FormSuccess item
-            -- Insert the entity.
-         -> do
+        FormSuccess item -> do
             (Right item') <- insertItem item False
             let (Entity itemId _) = item'
             let html =
