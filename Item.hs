@@ -65,7 +65,7 @@ instance ToJSON Item
 
 validateMinimumPrice :: Int -> Either Text Int
 validateMinimumPrice price =
-    if (price <= 0)
+    if price <= 0
         then Left "Price should be above 0"
         else Right price
 
@@ -74,7 +74,7 @@ validateNoExistingPrice :: Int -> Handler (Either Text Int)
 validateNoExistingPrice price = do
     existing <- runDB $ count [ItemPrice ==. price]
     return $
-        if (existing > 0)
+        if existing > 0
             then Left "Price already exists"
             else Right price
 
@@ -159,14 +159,14 @@ postApiItemsR = do
             sendResponseStatus status201 (toJSON entity)
 
 insertItem :: Item -> Bool -> Handler (Either [Text] (Entity Item))
-insertItem item validate = do
+insertItem item validate =
     if validate
         then do
             let validations = [validateMinimumPrice $ itemPrice item]
             -- Get the monadic validations.
             validationsM <- sequenceA [validateNoExistingPrice $ itemPrice item]
             let lefts' = lefts $ validations ++ validationsM
-            if (not $ null lefts')
+            if not $ null lefts'
                 then return $ Left lefts'
                 else do
                     insertedItem <- runDB $ insertEntity item
