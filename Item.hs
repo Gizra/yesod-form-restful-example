@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {- stack
-     --resolver lts-5.10
+     --resolver lts-8.17
      --install-ghc
      runghc
      --package yesod
